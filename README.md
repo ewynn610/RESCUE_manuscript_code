@@ -23,4 +23,7 @@ The code in this repository:
 The `rescueSim` package is available at [https://github.com/ewynn610/rescueSim](https://github.com/ewynn610/rescueSim) and can be installed using:
 
 ```r
-devtools::install_github("ewynn610/rescueSim")
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
+devtools::install_github("https://github.com/ewynn610/rescueSim")
