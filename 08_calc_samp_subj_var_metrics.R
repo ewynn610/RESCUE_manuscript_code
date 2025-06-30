@@ -4,8 +4,8 @@
 #SBATCH -e code/errs/err_08_calc_samp_subj_var_metrics-%a
 #SBATCH -o code/logs/out_08_calc_samp_subj_var_metrics-%a
 #SBATCH --array=1-19
-#SBATCH --mem=512G
-#SBATCH -c 16
+#SBATCH --mem=256G
+#SBATCH -c 8
 
 #######################################
 ## Script name: Cell-level benchmarking statistics
@@ -92,13 +92,23 @@ load_data_ls <- function(my_cell_type) {
     dat <- dat[non_de_match,]
   })
   names(splatPop_dat)<-c("splatPop_with_subj", "splatPop_no_subj")
-  list(
+  ls=list(
     empirical=empirical,
     splatPop_with_subj = splatPop_dat$splatPop_with_subj,
     splatPop_no_subj = splatPop_dat$splatPop_no_subj,
     rescue_sim = rescue_sim
     
   )
+  
+  ## If more than 30,000 cells, downsample
+  lapply(ls, function(dat){
+    if(ncol(dat)>30000){
+      set.seed(24)
+      idx<-sample(1:ncol(dat), size = 30000, replace = F)
+      dat <- dat[,idx]
+    }
+    dat
+  })
 }
 
 ## Load data

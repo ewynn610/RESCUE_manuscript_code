@@ -96,13 +96,7 @@ make_tsne <- function(seurat_obj, type, group_var = "sample_id", dims = 30, col_
 ## 04 - Calculate sillohette width
 #######################################
 
-run_sill_width<-function(seurat_obj, type, seed=24){
-  ## Sil width doesn't work well if to big...if more than 30,000 cells, downsample
-  if(ncol(seurat_obj)>30000){
-  set.seed(seed)
-  idx<-sample(1:ncol(seurat_obj), size = 30000, replace = F)
-  seurat_obj <- seurat_obj[,idx]
-  }
+run_sill_width<-function(seurat_obj, type){
   
   ## Dist matrix
   mtx <- dist(seurat_obj[["pca"]]@cell.embeddings)
@@ -133,8 +127,7 @@ run_icc=function(sce,type, n_genes_choose=800){
   
   res=lmerSeq::lmerSeq.fit(~(1|subjectID)+(1|sampleID), 
                            expr_mat = vst_sub,
-                           sample_data=data.frame(colData(sce)), parallel = T,
-                           cores=16)
+                           sample_data=data.frame(colData(sce)), parallel = F)
   
   ## Function to calculate ICC
   calc_icc=function(lmerseq_obj){
@@ -178,13 +171,13 @@ run_cms<-function(dat, type){
   
   ## Sample cms
   sample_cms<-CellMixS::cms(dat,k=k, k_min=10, group="sampleID", assay_name="normcounts", 
-                  BPPARAM = BiocParallel::MulticoreParam(16))
+                  BPPARAM = BiocParallel::MulticoreParam(8))
   
   ## Subject cms
   n_empirical=table(data_ls$empirical$subjectID)
   k=max(10, round(median(n_empirical[n_empirical != 0])))
   subject_cms<-CellMixS::cms(dat,k=k, k_min=10, group="subjectID", assay_name="normcounts", 
-                   BPPARAM =BiocParallel::MulticoreParam(16))
+                   BPPARAM =BiocParallel::MulticoreParam(8))
   
   data.frame(sample_cms=sample_cms$cms, subject_cms=subject_cms$cms,
              data_set=type, sampleID=dat$sampleID,

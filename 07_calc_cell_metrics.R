@@ -37,6 +37,14 @@ my_cell_type <- sub("_sce.*$", "", my_file)
 
 # Load empirical data
 empirical_sce <- readRDS(paste0("data_processed/sce_objs/", my_cell_type, "_sce.RDS"))
+
+## If there are more than 30,000 cells, downsample
+if(ncol(empirical_sce)>30000){
+  set.seed(24)
+  idx<-sample(1:ncol(empirical_sce), size = 30000, replace = F)
+  empirical_sce <- empirical_sce[,idx]
+}
+
 empirical_metrics <- calc_cell_metrics(counts(empirical_sce), "empirical",
                                        data.frame(as.character(empirical_sce$sampleID),
                                                   as.character(empirical_sce$subjectID),
@@ -54,6 +62,11 @@ gc()
 
 for (sim_name in sim_datasets) {
   sim_sce <- readRDS(paste0("simulations/", my_cell_type, "_", sim_name, ".RDS"))
+  if(ncol(sim_sce)>30000){
+    set.seed(24)
+    idx<-sample(1:ncol(sim_sce), size = 30000, replace = F)
+    sim_sce <- sim_sce[,idx]
+  }
   sim_metrics <- calc_cell_metrics(counts(sim_sce), sim_name,
                                    data.frame(as.character(sim_sce$sampleID),
                                               as.character(sim_sce$subjectID),
